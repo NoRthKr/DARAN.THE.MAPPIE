@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Mapper: Immigration Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        :root {
+            --primary-purple: #6c5ce7;
+            --dark-purple: #4834d4;
+            --light-purple: #efecff;
+            --bg-color: #f8f9fd;
+            --text-color: #2d3436;
+        }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container { 
+            max-width: 500px; 
+            width: 90%;
+            padding: 40px; 
+            border-radius: 24px; 
+            background: white; 
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
+            text-align: center;
+        }
+
+        h2 { 
+            color: var(--primary-purple); 
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            color: #636e72;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .upload-area {
+            border: 2px dashed #dcdde1;
+            padding: 30px;
+            border-radius: 16px;
+            background: var(--light-purple);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-purple);
+            background: #e8e4ff;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            cursor: pointer;
+            color: var(--dark-purple);
+            font-weight: 400;
+        }
+
+        .file-label i {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        button { 
+            background: var(--primary-purple); 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            cursor: pointer; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        button:hover { 
+            background: var(--dark-purple);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .note { 
+            font-size: 0.85em; 
+            color: #7f8c8d; 
+            margin-top: 25px; 
+            padding: 20px; 
+            background: #fdfdfd; 
+            border-radius: 12px; 
+            text-align: left;
+            border-left: 4px solid var(--primary-purple);
+        }
+
+        .note b {
+            color: var(--primary-purple);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #2ecc71;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>น้อง Mapper TM.30 สวัสดีค่ะ 🙏 </h2>
+    <p>แปลงไฟล์ CSV เข้ารูปแบบ XLS ส่งตม.กันเถอะ...</p>
+    
+    <div class="upload-area" onclick="document.getElementById('upload-b').click()">
+        <label class="file-label">
+            <span id="file-name">อัพโหลด Guest Foregner Check in today ตรงนี้!</span>
+        </label>
+        <input type="file" id="upload-b" accept=".csv" onchange="updateFileName()" />
+    </div>
+
+    <button onclick="processData()">เริ่มดึงข้อมูล</button>
+    <div id="status" class="status-msg">กำลังเริ่มดาวน์โหลด...</div>
+
+    <div class="note">
+        <b>💡 ขั้นตอนการใช้งานง่ายๆ:</b>
+        • อัพโหลดไฟล์ Guest Check in (Foregner only) ที่ Export มาจาก PMS <br>
+        • เริ่มดึงข้อมูลเสร็จ > ได้ไฟล์ Immagration Form A<br>
+        • เปิดไฟล์ Immagration Form A เพื่อตรวจสอบข้อมูลครบถ้วนถูกต้องไหม<br>
+        • หากถูกต้องครบถ้วนแล้ว > Save As (บันทึก)<br>
+        • **บันทึกเป็นไฟล์นามสกุล Exel 97-2003 Workbook** // เว็บตม.อ่านแค่ไฟล์นามสกุลนี้<br>
+        • นำไฟล์ที่บันทึก Exel 97-2003 workbook ไปนำเข้าในหน้าเว็บตม.<br>
+        • ในหน้าเว็บจะมีปุ่มแสดงผลข้อมูลสีเหลือง > กดและตรวจสอบข้อมูล<br>
+        • หากข้อมูลไม่ครบถ้วนตรงจุดไหน จะมีแถบไฮไลท์สีแดงแจ้งจุดที่ผิดให้ไปแก้ไขส่งใหม่<br>
+        **เว็บตม.ไม่อ่านภาษาไทยและอักขระอื่น ตรวจสอบให้ดีว่าไม่มีอักขระอื่นปนอยู่ ก่อนกดส่ง**
+    </div>
+</div>
+
+<script>
+    const nationalityMap = {
+        "Czech": "CZE", "British": "GBR", "English": "GBR", "American": "USA",
+        "Chinese": "CHN", "Japanese": "JPN", "South Korean": "KOR", "German": "DEU",
+        "French": "FRA", "Russian": "RUS", "Romanian": "ROU", "Indian": "IND",
+        "Indonesian": "IDN", "Burmese": "MMR", "Australian": "AUS", "Canadian": "CAN",
+        "Singaporean": "SGP", "Malaysian": "MYS", "Vietnamese": "VNM", "Laotian": "LAO",
+        "Cambodian": "KHM", "Ukrainian": "UKR", "Turkish": "TKM", "Taiwanese": "TWN",
+        "Syrian": "SYR", "Swiss": "CHE", "Hungarian": "HON", "Danish": "DNK",
+        "Greek": "GRC", "Bulgarian": "BGR", "Dutch": "NLD", "Swedish": "SWE",
+        "Saudi Arabian or Saudi": "SAU", "Polish": "POL", "Philippine": "PHL",
+        "New Zealander": "NZL", "Mauritian": "MUS", "Maltese": "MLT", "Lebanese": "LBN",
+        "Latvian": "LVA", "Italian": "ITA", "Israeli": "ISR", "Irish": "IRL",
+        "Brazilian": "BRA", "Belgian": "BEL", "Austrian": "AUT", "Chilean": "CHL",
+        "Colombian": "COL", "Cuban": "CUB", "Dominican": "DOM", "Egyptian": "EGY",
+        "Finnish": "FIN", "Honduran": "HND", "Kenyan": "KE", "Mexican": "MEX",
+        "Nigerian": "NG", "Norwegian": "NOR", "Pakistani": "PAK"
+    };
+
+    function updateFileName() {
+        const input = document.getElementById('upload-b');
+        const fileNameDisplay = document.getElementById('file-name');
+        if (input.files.length > 0) {
+            fileNameDisplay.innerText = "ไฟล์ที่เลือก: " + input.files[0].name;
+            fileNameDisplay.style.color = "#6c5ce7";
+        }
+    }
+
+    function getCountryCode(countryName) {
+        if (!countryName) return "";
+        const cleanName = countryName.trim();
+        return nationalityMap[cleanName] || cleanName;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr || dateStr === "-") return "";
+        const months = {
+            Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
+            Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12"
+        };
+        const parts = dateStr.split(" ");
+        if (parts.length >= 3) {
+            const day = parts[0].padStart(2, '0');
+            const month = months[parts[1]];
+            const year = parts[2];
+            return `${day}/${month}/${year}`;
+        }
+        return dateStr;
+    }
+
+    function processData() {
+        const fileInput = document.getElementById('upload-b');
+        if (!fileInput.files.length) {
+            alert("กรุณาเลือกไฟล์ .csv ก่อนค่ะ");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const dataB = results.data;
+                const headerA = [
+                    "ชื่อ\nFirst Name *", "ชื่อกลาง\nMiddle Name", "นามสกุล\nLast Name",
+                    "เพศ\nGender *", "เลขหนังสือเดินทาง\nPassport No. *", "สัญชาติ\nNationality *",
+                    "วัน เดือน ปี เกิด\nBirth Date\nDD/MM/YYYY", "วันที่แจ้งออกจากที่พัก\nCheck-out Date\nDD/MM/YYYY",
+                    "เบอร์โทรศัพท์\nPhone No."
+                ];
+
+                const mappedData = dataB.map(row => [
+                    row["First Name"] || "",
+                    "", 
+                    row["Last Name"] || "",
+                    (row["Sex"] === "Male" ? "M" : row["Sex"] === "Female" ? "F" : ""),
+                    row["Passport No."] || "",
+                    getCountryCode(row["Nationality"]),
+                    formatDate(row["Date of Birth"]),
+                    formatDate(row["Check Out"]),
+                    "" 
+                ]);
+
+                const finalCSV = Papa.unparse({ fields: headerA, data: mappedData });
+                
+                document.getElementById('status').style.display = 'block';
+                setTimeout(() => { document.getElementById('status').style.display = 'none'; }, 3000);
+                
+                downloadCSV(finalCSV);
+            }
+        });
+    }
+
+    function downloadCSV(csvContent) {
+        const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "Immigration_Form_A.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>
