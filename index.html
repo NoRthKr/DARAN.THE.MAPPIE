@@ -1,9 +1,11 @@
 <!DOCTYPE html>
+<html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>DARAN TANAHIRUN HELPER</title>
+    <title>CSV Mapper: B to A (Immigration Form)</title>
     
-    <link rel="icon" type="image/x-icon" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root {
@@ -91,7 +93,7 @@
             font-size: 0.95rem;
         }
 
-        /* ตัวเลือกไฟล์เท่ๆ */
+        /* ตัวเลือกไฟล์ */
         .file-wrapper {
             position: relative;
             margin-bottom: 25px;
@@ -181,8 +183,8 @@
 <body>
 
 <div class="container">    
-    <h2>ดารัญมาช่วยแล้วค่าาาา 🙏</h2>    
-    <p>แปลงไฟล์ CSV เข้ารูปแบบ XLS ส่งเว็บตม.กันเถอะ...</p>        
+    <h2>น้อง Mapper TM.30 สวัสดีค่ะ 🙏</h2>    
+    <p>แปลงไฟล์ CSV เข้ารูปแบบ XLS ส่งตม.กันเถอะ...</p>        
     
     <div class="file-wrapper">
         <input type="file" id="upload-b" accept=".csv" />
@@ -206,7 +208,7 @@
 </div>
 
 <script>
-    // ชุดข้อมูล Mapping สัญชาติ (เพิ่ม/แก้ไขได้ที่นี่)
+    // ชุดข้อมูล Mapping สัญชาติ
     const nationalityMap = {        
         "Czech": "CZE", "British": "GBR", "English": "GBR", "American": "USA",        
         "Chinese": "CHN", "Japanese": "JPN", "South Korean": "KOR", "German": "DEU",        
